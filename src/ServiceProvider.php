@@ -22,6 +22,8 @@ class ServiceProvider extends LaravelServiceProvider
             $this->publishes([__DIR__.'/../config' => config_path()], 'laravel-cart-config');
             $this->publishes([__DIR__.'/../database/migrations' => database_path('migrations')], 'laravel-cart-migrations');
         }
+
+
     }
 
     /**
@@ -30,8 +32,8 @@ class ServiceProvider extends LaravelServiceProvider
     public function register()
     {
         // merge configs
-        $this->mergeConfigFrom(
-            __DIR__ . '/config.php', 'cart'
+        $this->mergeConfigFrom( 
+            __DIR__ . '/../config/cart.php', 'cart'
         );
 
         $this->app->singleton(Cart::class, function ($app) {
