@@ -18,7 +18,6 @@ class ServiceProvider extends LaravelServiceProvider
      */
     public function boot()
     {
-
         if ($this->app->runningInConsole()) {
             $this->publishes([__DIR__.'/../config' => config_path()], 'laravel-cart-config');
             $this->publishes([__DIR__.'/../database/migrations' => database_path('migrations')], 'laravel-cart-migrations');

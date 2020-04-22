@@ -29,9 +29,9 @@ class CreateCartsTable extends Migration
                 $table->string('__model')->nullable()->comment('模型');
 
                 $table->string('type')->nullable();
-                $table->string('status')->default(0)->nullable();
                 $table->text('attributes')->nullable();
                 $table->primary(['key', '__raw_id']);
+                
                 $table->timestamps();
             });
         }
