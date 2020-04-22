@@ -14,10 +14,10 @@ $ composer require cherrynechou/laravel-shopping-cart -vvv
 TODO
 
 ## Contributing
-
-//distribute resource
+```
+//distribute resource    
 php artisan vendor:publish --provider="CherryneChou\LaravelShoppingCart\ServiceProvider"
-
+```
 ## License
 
 MIT
