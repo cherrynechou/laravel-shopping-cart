@@ -22,9 +22,9 @@ class CreateCartsTable extends Migration
                 $table->string('__raw_id');
                 $table->string('guard')->nullable();
 
+                $table->integer('id')->comment('商品id');
                 $table->integer('user_id')->nullable();
                 $table->integer('community_id')->comment('商品id');
-                $table->integer('goods_id')->comment('商品id');
                 $table->integer('qty')->comment('数量');
                 $table->string('type')->nullable();
 

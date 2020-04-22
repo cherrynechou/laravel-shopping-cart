@@ -114,21 +114,21 @@ class Cart
     /**
      * Add a row to the cart.
      *
-     * @param int|string $id         Unique ID of the item
-     * @param string     $name       Name of the item
-     * @param int        $qty        Item qty to add to the cart
-     * @param float      $price      Price of one item
+     * @param int|string $id                Unique ID of the item
+     * @param int|string $community_id      community_id 
+     * @param int        $qty               Item qty to add to the cart
+     * @param int|string $type              item type to add to the cart
      * @param array      $attributes Array of additional attributes, such as 'size' or 'color'...
      *
      * @return string
      */
-    public function add($id, $name = null, $qty = null, array $attributes = [])
+    public function add($id, $community_id = null, $qty = null, $type=null, array $attributes = [])
     {
         $cart = $this->getCart();
 
         $this->event->dispatchEvent('cart.adding', [$attributes, $cart]);
 
-        $row = $this->addRow($id, $name, $qty, $attributes);
+        $row = $this->addRow($id, $community_id, $qty, $type, $attributes);
 
         $this->event->dispatchEvent('cart.added', [$attributes, $cart]);
 
@@ -258,7 +258,9 @@ class Cart
         }
 
         foreach ($cart as $row) {
-            $total += $row->qty * $row->model->price;
+            if ($row and $row->model) {
+                $total += $item->qty * $item->model->price;
+            }
         }
 
         return $total;
@@ -363,10 +365,14 @@ class Cart
      *
      * @return string
      */
-    protected function addRow($id, $name, $qty, $price, array $attributes = [])
+    protected function addRow($id, $community_id, $qty, $type ,array $attributes = [])
     {
         if (!is_numeric($qty) || $qty < 1) {
             throw new Exception('Invalid quantity.');
+        }
+
+        if(!is_numeric($community_id) || $community_id==0){
+            throw new Exception('Invalid community_id.');
         }
 
         if (!is_numeric($price) || $price < 0) {
@@ -375,12 +381,13 @@ class Cart
 
         $cart = $this->getCart();
 
-        $rawId = $this->generateRawId($id, $attributes);
+        //生成方法  商品id 社区id
+        $rawId = $this->generateRawId($id, $community_id, $attributes);
 
         if ($row = $cart->get($rawId)) {
             $row = $this->updateQty($rawId, $row->qty + $qty);
         } else {
-            $row = $this->insertRow($rawId, $id, $name, $qty, $attributes);
+            $row = $this->insertRow($rawId, $id, $community_id, $qty, $type, $attributes);
         }
 
         return $row;
@@ -389,16 +396,18 @@ class Cart
     /**
      * Generate a unique id for the new row.
      *
-     * @param string $id         Unique ID of the item
+     * @param string $id                    Unique ID of the item
+     * @param string $community_id          Unique ID of the item
+     * @param string $type                  Unique ID of the item
      * @param array  $attributes Array of additional options, such as 'size' or 'color'
      *
      * @return string
      */
-    protected function generateRawId($id, $attributes)
+    protected function generateRawId($id, $community_id, $attributes)
     {
         ksort($attributes);
-
-        return md5($id.serialize($attributes));
+        
+        return md5($id . $community_id . serialize($attributes));
     }
 
     /**
@@ -458,10 +467,6 @@ class Cart
             $row->put($key, $value);
         }
 
-        if (count(array_intersect(array_keys($attributes), ['qty']))) {
-            $row->put('total', $row->qty * $row->model->price);
-        }
-
         $cart->put($rawId, $row);
 
         $this->save($cart);
@@ -480,9 +485,9 @@ class Cart
      *
      * @return Item
      */
-    protected function insertRow($rawId, $id, $name, $qty, $attributes = [])
+    protected function insertRow($rawId, $id, $community_id, $qty, $type, $attributes = [])
     {
-        $newRow = $this->makeRow($rawId, $id, $name, $qty, $attributes);
+        $newRow = $this->makeRow($rawId, $id, $community_id, $qty, $type, $attributes);
 
         $cart = $this->getCart();
 
@@ -505,13 +510,14 @@ class Cart
      *
      * @return Item
      */
-    protected function makeRow($rawId, $id, $name, $qty, $price, array $attributes = [])
+    protected function makeRow($rawId, $id, $community_id, $qty, $type, array $attributes = [])
     {
         return new Item(array_merge([
             '__raw_id' => $rawId,
             'id' => $id,
-            'name' => $name,
+            'community_id' => $name,
             'qty' => $qty,
+            'type'=> $type,
             '__model' => $this->model,
         ], $attributes));
     }
