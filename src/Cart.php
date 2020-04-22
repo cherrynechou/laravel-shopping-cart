@@ -5,7 +5,7 @@ namespace CherryneChou\LaravelShoppingCart;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Collection;
 use DB;
-use CherryneChou\Shoppingcart\Item;
+use CherryneChou\LaravelShoppingCart\Item;
 
 class Cart
 {

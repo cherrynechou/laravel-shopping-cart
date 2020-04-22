@@ -6,8 +6,10 @@ return [
         'connection'                    =>      '',
 
         //Database database config name
-        'prefix'                        =>      '',    //项目表前缀
+        'prefix'                        =>      env('DB_PREFIX', ''),    //项目表前缀
     ],
+
+    'storage' => \CherryneChou\LaravelShoppingCart\Storage\DatabaseStorage::class,
     /** @lang guards alias name. */
     'aliases' => [
         'web' => 'default',

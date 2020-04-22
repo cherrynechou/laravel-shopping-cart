@@ -4,7 +4,7 @@ namespace CherryneChou\LaravelShoppingCart\Storage;
 
 use Illuminate\Support\Arr;
 
-class DatabaseStoreage implements Storage
+class DatabaseStorage implements Storage
 {
     /**
      * @var string
@@ -14,18 +14,18 @@ class DatabaseStoreage implements Storage
     /**
      * @var array
      */
-    private $field = ['__raw_id', 'id', 'quantity', '__model', 'type', 'status'];
+    private $field = ['__raw_id', 'id', 'qty', '__model', 'type', 'status'];
 
     /**
      * 
      */
-    public function __contruction()
+    public function __construct()
     {
         $prefix = config('cart.database.prefix', '');
 
-        $table_name = $prefix . 'cart';
+        $table_name = $prefix . 'carts';
 
-        $this->table = table_name;
+        $this->table = $table_name;
     }
 
     /**
@@ -53,12 +53,14 @@ class DatabaseStoreage implements Storage
         $values = $values->toArray();
 
         foreach ($values as $value) {
-            $item = array_only($value, $this->field);
-            $attr = json_encode(array_except($value, $this->field));
+            $item = Arr::only($value, $this->field);
+            $attr = json_encode(Arr::except($value, $this->field));
+
             $insert = array_merge($item, ['attributes' => $attr, 'key' => $key, 'guard' => $guard, 'user_id' => $userId]);
+
             if (DB::table($this->table)->where(['key' => $key, '__raw_id' => $item['__raw_id']])->first()) {
                 DB::table($this->table)->where(['key' => $key, '__raw_id' => $item['__raw_id']])
-                    ->update(array_except($insert, ['key', '__raw_id']));
+                    ->update(Arr::except($insert, ['key', '__raw_id']));
             } else {
                 DB::table($this->table)->insert($insert);
             }
@@ -81,7 +83,7 @@ class DatabaseStoreage implements Storage
         foreach ($items as $item) {
             $item = json_decode(json_encode($item), true);
             $attr = json_decode($item['attributes'], true);
-            $item = array_only($item, $this->filed);
+            $item = Arr::only($item, $this->filed);
             $item = array_merge($item, $attr);
             $collection[$item['__raw_id']] = new Item($item);
         }
