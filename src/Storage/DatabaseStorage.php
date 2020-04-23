@@ -12,7 +12,7 @@ class DatabaseStorage implements Storage
     /**
      * @var array
      */
-    private $field = ['__raw_id', 'id', 'qty', 'community_id' ,'__model', 'type'];
+    private $field = ['__raw_id', 'id', 'qty', 'community_id' ,'__model'];
 
     /**
      * @param $key
@@ -69,7 +69,7 @@ class DatabaseStorage implements Storage
         foreach ($items as $item) {
             $item = json_decode(json_encode($item), true);
             $attr = json_decode($item['attributes'], true);
-            $item = Arr::only($item, $this->filed);
+            $item = Arr::only($item, $this->field);
             $item = array_merge($item, $attr);
             $collection[$item['__raw_id']] = new Item($item);
         }

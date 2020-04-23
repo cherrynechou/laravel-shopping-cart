@@ -4,7 +4,7 @@ namespace CherryneChou\LaravelShoppingCart;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Collection;
-use DB;
+use CherryneChou\LaravelShoppingCart\Storage\Storage;
 use CherryneChou\LaravelShoppingCart\Item;
 
 class Cart
@@ -50,7 +50,7 @@ class Cart
     }
 
     /**
-     * 
+     * setting storage
      */
     public function setStorage(Storage $storage)
     {
@@ -117,18 +117,17 @@ class Cart
      * @param int|string $id                Unique ID of the item
      * @param int|string $community_id      community_id 
      * @param int        $qty               Item qty to add to the cart
-     * @param int|string $type              item type to add to the cart
      * @param array      $attributes Array of additional attributes, such as 'size' or 'color'...
      *
      * @return string
      */
-    public function add($id, $community_id = null, $qty = null, $type=null, array $attributes = [])
+    public function add($id, $community_id = null, $qty = null, array $attributes = [])
     {
         $cart = $this->getCart();
 
         $this->dispatchEvent('cart.adding', [$attributes, $cart]);
 
-        $row = $this->addRow($id, $community_id, $qty, $type, $attributes);
+        $row = $this->addRow($id, $community_id, $qty,  $attributes);
 
         $this->dispatchEvent('cart.added', [$attributes, $cart]);
 
@@ -360,12 +359,11 @@ class Cart
      * @param string $id                Unique ID of the item
      * @param string $community_id      Name of the item
      * @param int    $qty               Item qty to add to the cart
-     * @param float  $price             Price of one item
      * @param array  $attributes        Array of additional options, such as 'size' or 'color'
      *
      * @return string
      */
-    protected function addRow($id, $community_id, $qty, $type ,array $attributes = [])
+    protected function addRow($id, $community_id, $qty ,array $attributes = [])
     {
         if (!is_numeric($qty) || $qty < 1) {
             throw new Exception('Invalid quantity.');
@@ -383,7 +381,7 @@ class Cart
         if ($row = $cart->get($rawId)) {
             $row = $this->updateQty($rawId, $row->qty + $qty);
         } else {
-            $row = $this->insertRow($rawId, $id, $community_id, $qty, $type, $attributes);
+            $row = $this->insertRow($rawId, $id, $community_id, $qty , $attributes);
         }
 
         return $row;
@@ -393,7 +391,7 @@ class Cart
      * Generate a unique id for the new row.
      *
      * @param string $id                    Unique ID of the item
-     * @param string $community_id          Unique ID of the item
+     * @param string $community_id          community ID of the item
      * @param array  $attributes Array of additional options, such as 'size' or 'color'
      *
      * @return string
@@ -476,14 +474,13 @@ class Cart
      * @param string        $id                Unique ID of the item
      * @param string        $community_id      Name of the item
      * @param int           $qty               Item qty to add to the cart
-     * @param int|string    $type              Item type to add to the cart
      * @param array  $attributes        Array of additional options, such as 'size' or 'color'
      *
      * @return Item
      */
-    protected function insertRow($rawId, $id, $community_id, $qty, $type, $attributes = [])
+    protected function insertRow($rawId, $id, $community_id, $qty, $attributes = [])
     {
-        $newRow = $this->makeRow($rawId, $id, $community_id, $qty, $type, $attributes);
+        $newRow = $this->makeRow($rawId, $id, $community_id, $qty, $attributes);
 
         $cart = $this->getCart();
 
@@ -501,19 +498,17 @@ class Cart
      * @param mixed  $id                item id
      * @param string $community_id      item name
      * @param int    $qty               quantity
-     * @param string  $type             price
      * @param array  $attributes other attributes
      *
      * @return Item
      */
-    protected function makeRow($rawId, $id, $community_id, $qty, $type, array $attributes = [])
+    protected function makeRow($rawId, $id, $community_id, $qty, array $attributes = [])
     {
         return new Item(array_merge([
             '__raw_id' => $rawId,
             'id' => $id,
             'community_id' => $community_id,
             'qty' => $qty,
-            'type'=> $type,
             '__model' => $this->model,
         ], $attributes));
     }
