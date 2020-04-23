@@ -12,7 +12,7 @@ class Cart
     /**
      * Session manager.
      *
-     * @var \CherryneChou\Shoppingcart\Storage\Storage
+     * @var \CherryneChou\LaravelShoppingCart\Storage\Storage
      */
     protected $storage;
 
@@ -40,7 +40,7 @@ class Cart
     /**
      * Constructor.
      *
-     * @param \CherryneChou\Shoppingcart\Storage\Storage    $storage $storage class name
+     * @param \CherryneChou\LaravelShoppingCart\Storage\Storage    $storage $storage class name
      * @param \Illuminate\Contracts\Events\Dispatcher $event   Event class name
      */
     public function __construct(Storage $storage, Dispatcher $event)
@@ -126,11 +126,11 @@ class Cart
     {
         $cart = $this->getCart();
 
-        $this->event->dispatchEvent('cart.adding', [$attributes, $cart]);
+        $this->dispatchEvent('cart.adding', [$attributes, $cart]);
 
         $row = $this->addRow($id, $community_id, $qty, $type, $attributes);
 
-        $this->event->dispatchEvent('cart.added', [$attributes, $cart]);
+        $this->dispatchEvent('cart.added', [$attributes, $cart]);
 
         return $row;
     }
@@ -151,7 +151,7 @@ class Cart
 
         $cart = $this->getCart();
 
-        $this->event->dispatchEvent('cart.updating', [$row, $cart]);
+        $this->dispatchEvent('cart.updating', [$row, $cart]);
 
         if (is_array($attribute)) {
             $raw = $this->updateAttribute($rawId, $attribute);
@@ -159,7 +159,7 @@ class Cart
             $raw = $this->updateQty($rawId, $attribute);
         }
 
-        $this->event->dispatchEvent('cart.updated', [$row, $cart]);
+        $this->dispatchEvent('cart.updated', [$row, $cart]);
 
         return $raw;
     }
@@ -179,11 +179,11 @@ class Cart
 
         $cart = $this->getCart();
 
-        $this->event->dispatchEvent('cart.removing', [$row, $cart]);
+        $this->dispatchEvent('cart.removing', [$row, $cart]);
 
         $cart->forget($rawId);
 
-        $this->event->dispatchEvent('cart.removed', [$row, $cart]);
+        $this->dispatchEvent('cart.removed', [$row, $cart]);
 
         $this->save($cart);
 
@@ -213,11 +213,11 @@ class Cart
     {
         $cart = $this->getCart();
 
-        $this->event->fire('cart.destroying', $cart);
+        $this->dispatchEvent('cart.destroying', $cart);
 
         $this->save(null);
 
-        $this->event->fire('cart.destroyed', $cart);
+        $this->dispatchEvent('cart.destroyed', $cart);
 
         return true;
     }
@@ -259,7 +259,7 @@ class Cart
 
         foreach ($cart as $row) {
             if ($row and $row->model) {
-                $total += $item->qty * $item->model->price;
+                $total += $row->qty * $row->model->price;
             }
         }
 
@@ -357,11 +357,11 @@ class Cart
     /**
      * Add row to the cart.
      *
-     * @param string $id         Unique ID of the item
-     * @param string $name       Name of the item
-     * @param int    $qty        Item qty to add to the cart
-     * @param float  $price      Price of one item
-     * @param array  $attributes Array of additional options, such as 'size' or 'color'
+     * @param string $id                Unique ID of the item
+     * @param string $community_id      Name of the item
+     * @param int    $qty               Item qty to add to the cart
+     * @param float  $price             Price of one item
+     * @param array  $attributes        Array of additional options, such as 'size' or 'color'
      *
      * @return string
      */
@@ -373,10 +373,6 @@ class Cart
 
         if(!is_numeric($community_id) || $community_id==0){
             throw new Exception('Invalid community_id.');
-        }
-
-        if (!is_numeric($price) || $price < 0) {
-            throw new Exception('Invalid price.');
         }
 
         $cart = $this->getCart();
@@ -398,7 +394,6 @@ class Cart
      *
      * @param string $id                    Unique ID of the item
      * @param string $community_id          Unique ID of the item
-     * @param string $type                  Unique ID of the item
      * @param array  $attributes Array of additional options, such as 'size' or 'color'
      *
      * @return string
@@ -477,11 +472,12 @@ class Cart
     /**
      * Create a new row Object.
      *
-     * @param string $rawId      The ID of the new row
-     * @param string $id         Unique ID of the item
-     * @param string $name       Name of the item
-     * @param int    $qty        Item qty to add to the cart
-     * @param array  $attributes Array of additional options, such as 'size' or 'color'
+     * @param string        $rawId             The ID of the new row
+     * @param string        $id                Unique ID of the item
+     * @param string        $community_id      Name of the item
+     * @param int           $qty               Item qty to add to the cart
+     * @param int|string    $type              Item type to add to the cart
+     * @param array  $attributes        Array of additional options, such as 'size' or 'color'
      *
      * @return Item
      */
@@ -501,11 +497,11 @@ class Cart
     /**
      * Make a row item.
      *
-     * @param string $rawId      raw id
-     * @param mixed  $id         item id
-     * @param string $name       item name
-     * @param int    $qty        quantity
-     * @param float  $price      price
+     * @param string $rawId             raw id
+     * @param mixed  $id                item id
+     * @param string $community_id      item name
+     * @param int    $qty               quantity
+     * @param string  $type             price
      * @param array  $attributes other attributes
      *
      * @return Item
@@ -515,7 +511,7 @@ class Cart
         return new Item(array_merge([
             '__raw_id' => $rawId,
             'id' => $id,
-            'community_id' => $name,
+            'community_id' => $community_id,
             'qty' => $qty,
             'type'=> $type,
             '__model' => $this->model,

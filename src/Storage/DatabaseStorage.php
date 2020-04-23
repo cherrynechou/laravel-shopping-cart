@@ -3,30 +3,16 @@
 namespace CherryneChou\LaravelShoppingCart\Storage;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+use CherryneChou\LaravelShoppingCart\Item;
+use CherryneChou\LaravelShoppingCart\Models\Cart;
 
 class DatabaseStorage implements Storage
 {
     /**
-     * @var string
-     */
-    private $table ='';
-
-    /**
      * @var array
      */
-    private $field = ['__raw_id', 'id', 'qty', 'community_id' ,'__model', 'type', 'status'];
-
-    /**
-     * 
-     */
-    public function __construct()
-    {
-        $prefix = config('cart.database.prefix', '');
-
-        $table_name = $prefix . 'carts';
-
-        $this->table = $table_name;
-    }
+    private $field = ['__raw_id', 'id', 'qty', 'community_id' ,'__model', 'type'];
 
     /**
      * @param $key
@@ -43,7 +29,7 @@ class DatabaseStorage implements Storage
         $rawIds = $values->pluck('__raw_id')->toArray();
 
         //Delete the data that has been removed from cart.
-        DB::table($this->table)->whereNotIn('__raw_id', $rawIds)->where('key', $key)->delete();
+        Cart::whereNotIn('__raw_id', $rawIds)->where('key', $key)->delete();
 
         $keys = explode('.', $key);
 
@@ -58,11 +44,11 @@ class DatabaseStorage implements Storage
 
             $insert = array_merge($item, ['attributes' => $attr, 'key' => $key, 'guard' => $guard, 'user_id' => $userId]);
 
-            if (DB::table($this->table)->where(['key' => $key, '__raw_id' => $item['__raw_id']])->first()) {
-                DB::table($this->table)->where(['key' => $key, '__raw_id' => $item['__raw_id']])
+            if (Cart::where(['key' => $key, '__raw_id' => $item['__raw_id']])->first()) {
+                Cart::where(['key' => $key, '__raw_id' => $item['__raw_id']])
                     ->update(Arr::except($insert, ['key', '__raw_id']));
             } else {
-                DB::table($this->table)->insert($insert);
+                Cart::insert($insert);
             }
         }
     }
@@ -76,7 +62,7 @@ class DatabaseStorage implements Storage
      */
     public function get($key, $default = null)
     {
-        $items = DB::table($this->table)->where('key', $key)->get();
+        $items = Cart::where('key', $key)->get();
 
         $items = $items->toArray();
         $collection = [];
@@ -96,7 +82,7 @@ class DatabaseStorage implements Storage
      */
     public function forget($key)
     {
-        DB::table($this->table)->where('key', $key)->delete();
+        Cart::where('key', $key)->delete();
     }
 
 }
