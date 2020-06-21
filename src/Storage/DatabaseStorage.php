@@ -12,7 +12,7 @@ class DatabaseStorage implements Storage
     /**
      * @var array
      */
-    private $field = ['__raw_id', 'id', 'qty', 'community_id' ,'__model'];
+    private $field = ['__raw_id', 'id', 'qty', 'community_id' ,'__model','type', 'status'];
 
     /**
      * @param $key
