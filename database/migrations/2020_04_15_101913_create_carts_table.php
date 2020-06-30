@@ -24,7 +24,6 @@ class CreateCartsTable extends Migration
 
                 $table->integer('id')->comment('商品id');
                 $table->integer('user_id')->nullable();
-                $table->integer('community_id')->comment('社区id');
                 $table->integer('qty')->comment('数量');
 
                 $table->string('__model')->nullable()->comment('模型');
