@@ -12,7 +12,7 @@ class DatabaseStorage implements Storage
     /**
      * @var array
      */
-    private $field = ['__raw_id', 'id', 'qty', 'community_id' ,'__model','type', 'status'];
+    private $field = ['__raw_id', 'id', 'qty' ,'__model','type', 'status'];
 
     /**
      * @param $key
@@ -24,7 +24,7 @@ class DatabaseStorage implements Storage
             $this->forget($key);
 
             return;
-        }
+        }   
 
         $rawIds = $values->pluck('__raw_id')->toArray();
 
