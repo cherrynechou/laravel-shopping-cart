@@ -279,8 +279,9 @@ class Cart
             return $rows;
         }
 
+        // exact match  key && value
         foreach ($this->getCart() as $item) {
-            if (array_intersect_assoc($item->intersect($search)->toArray(), $search)) {
+            if (empty( array_diff_assoc($item->intersect($search)->toArray(), $search)) ) {
                 $rows->put($item->__raw_id, $item);
             }
         }
