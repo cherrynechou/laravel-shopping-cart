@@ -12,7 +12,7 @@ class DatabaseStorage implements Storage
     /**
      * @var array
      */
-    private $field = ['__raw_id', 'id', 'qty' ,'__model','type', 'status'];
+    private $field = ['__raw_id', 'id', 'qty' ,'__model','type', 'is_selected'];
 
     /**
      * @param $key
@@ -42,11 +42,17 @@ class DatabaseStorage implements Storage
             $item = Arr::only($value, $this->field);
             $attr = json_encode(Arr::except($value, $this->field));
 
-            $insert = array_merge($item, ['attributes' => $attr, 'key' => $key, 'guard' => $guard, 'user_id' => $userId]);
+            $insert = array_merge($item, [
+                'attributes' => $attr,
+                'key' => $key,
+                'guard' => $guard,
+                'user_id' => $userId,
+                'created_at' => Carbon::now()
+            ]);
 
             if (Cart::where(['key' => $key, '__raw_id' => $item['__raw_id']])->first()) {
                 Cart::where(['key' => $key, '__raw_id' => $item['__raw_id']])
-                    ->update(Arr::except($insert, ['key', '__raw_id']));
+                    ->update(Arr::except($insert, ['key', '__raw_id','created_at']));
             } else {
                 Cart::insert($insert);
             }
