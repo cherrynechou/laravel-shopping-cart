@@ -5,6 +5,7 @@ namespace CherryneChou\LaravelShoppingCart\Storage;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use CherryneChou\LaravelShoppingCart\Item;
+use Illuminate\Support\Carbon;
 use CherryneChou\LaravelShoppingCart\Models\Cart;
 
 class DatabaseStorage implements Storage
